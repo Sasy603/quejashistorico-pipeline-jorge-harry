@@ -40,10 +40,4 @@ jobs:
 
       - name: Load files into RAW table
         run: |
-          snowflake sql -q "
-            COPY INTO RAW.landing_table
-            FROM @my_internal_stage
-            FILE_FORMAT = (TYPE = 'CSV')
-            PATTERN='.*\.csv'
-            ON_ERROR='CONTINUE';
-          "
+          snowflake sql -q "COPY INTO RAW.landing_table FROM @my_internal_stage FILE_FORMAT = (TYPE = 'CSV') PATTERN='.*\.csv' ON_ERROR='CONTINUE'; "
