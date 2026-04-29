@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
 
       - name: Install Snowflake CLI
         run: |
@@ -32,17 +35,16 @@ jobs:
           EOF
           chmod 600 ~/.snowflake/config.toml
 
-      - name: Subir archivos modificados al stage de Snowflake
+      - name: Obtener archivos modificados en data/
         run: |
-          FILES=$(jq -r '
-            [
-              (.commits[].added // []),
-              (.commits[].modified // [])
-            ]
-            | add
-            | .[]
-            | select(startswith("data/"))
-          ' <<< '${{ toJson(github.event) }}')
+          BEFORE=${{ github.event.before }}
+          AFTER=${{ github.event.after }}
+      
+          echo "Comparando commits:"
+          echo "BEFORE: $BEFORE"
+          echo "AFTER:  $AFTER"
+      
+          FILES=$(git diff --name-only "$BEFORE" "$AFTER" | grep "^data/" || true)
       
           echo "Archivos detectados:"
           echo "$FILES"
