@@ -17,6 +17,8 @@ jobs:
         run: |
           pip install --user snowflake-cli
           echo "$HOME/.local/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.local/bin:$PATH"
+          snowflake --help
 
       - name: Configure Snowflake CLI connection
         run: |
@@ -34,6 +36,7 @@ jobs:
 
       - name: Upload new files to internal stage
         run: |
+          export PATH="$HOME/.local/bin:$PATH"
           for file in $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep "^data/"); do
             echo "Subiendo archivo: $file"
             snowflake file put "$file" @my_internal_stage --auto-compress
@@ -41,6 +44,7 @@ jobs:
 
       - name: Load files into RAW table
         run: |
+          export PATH="$HOME/.local/bin:$PATH"
           snowflake sql -q "
             COPY INTO RAW.landing_table
             FROM @my_internal_stage
