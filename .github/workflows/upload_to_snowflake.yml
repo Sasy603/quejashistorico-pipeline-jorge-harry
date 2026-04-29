@@ -15,7 +15,7 @@ jobs:
 
       - name: Install Snowflake CLI
         run: |
-          pip install snowflake-cli
+          pip install snowflake-cli-labs
 
       - name: Configure Snowflake CLI connection
         run: |
@@ -35,9 +35,9 @@ jobs:
         run: |
           for file in $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep "^data/"); do
             echo "Subiendo archivo: $file"
-            snowflake file put "$file" @my_internal_stage --auto-compress
+            snow file put "$file" @my_internal_stage --auto-compress
           done
 
       - name: Load files into RAW table
         run: |
-          snowflake sql -q "COPY INTO RAW.landing_table FROM @my_internal_stage FILE_FORMAT = (TYPE = 'CSV') PATTERN='.*\.csv' ON_ERROR='CONTINUE'; "
+          snow sql -q "COPY INTO RAW.landing_table FROM @my_internal_stage FILE_FORMAT = (TYPE = 'CSV') PATTERN='.*\.csv' ON_ERROR='CONTINUE';"
