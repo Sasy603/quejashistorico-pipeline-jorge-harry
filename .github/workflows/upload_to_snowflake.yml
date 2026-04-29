@@ -13,36 +13,34 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install SnowSQL (official installer)
+      - name: Install Snowflake CLI
         run: |
-          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.29-linux_x86_64.bash
-          bash snowsql-1.2.29-linux_x86_64.bash -y
-          echo "$HOME/.snowsql" >> $GITHUB_PATH
+          pip install snowflake-cli
 
-      - name: Configure SnowSQL connection
+      - name: Configure Snowflake CLI connection
         run: |
-          mkdir -p ~/.snowsql
-          cat <<EOF > ~/.snowsql/config
+          mkdir -p ~/.snowflake
+          cat <<EOF > ~/.snowflake/config.toml
           [connections.default]
-          accountname = ${{ secrets.SNOWFLAKE_ACCOUNT }}
-          username = ${{ secrets.SNOWFLAKE_USER }}
-          password = ${{ secrets.SNOWFLAKE_PASSWORD }}
-          warehousename = ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-          dbname = ${{ secrets.SNOWFLAKE_DATABASE }}
-          schemaname = ${{ secrets.SNOWFLAKE_SCHEMA }}
-          role = ${{ secrets.SNOWFLAKE_ROLE }}
+          account = "${{ secrets.SNOWFLAKE_ACCOUNT }}"
+          user = "${{ secrets.SNOWFLAKE_USER }}"
+          password = "${{ secrets.SNOWFLAKE_PASSWORD }}"
+          role = "${{ secrets.SNOWFLAKE_ROLE }}"
+          warehouse = "${{ secrets.SNOWFLAKE_WAREHOUSE }}"
+          database = "${{ secrets.SNOWFLAKE_DATABASE }}"
+          schema = "${{ secrets.SNOWFLAKE_SCHEMA }}"
           EOF
 
       - name: Upload new files to internal stage
         run: |
           for file in $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep "^data/"); do
             echo "Subiendo archivo: $file"
-            snowsql -c default -q "PUT file://$file @my_internal_stage AUTO_COMPRESS=TRUE"
+            snowflake file put "$file" @my_internal_stage --auto-compress
           done
 
-      - name: Load files into RAW table (incremental por archivo)
+      - name: Load files into RAW table
         run: |
-          snowsql -c default -q "
+          snowflake sql -q "
             COPY INTO RAW.landing_table
             FROM @my_internal_stage
             FILE_FORMAT = (TYPE = 'CSV')
