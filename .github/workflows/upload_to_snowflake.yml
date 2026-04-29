@@ -39,7 +39,3 @@ jobs:
             echo "Subiendo archivo: $file"
             snow file put "$file" @my_internal_stage --auto-compress
           done
-
-      - name: Load files into RAW table
-        run: |
-          snow sql -q "COPY INTO RAW.landing_table FROM @my_internal_stage FILE_FORMAT = (TYPE = 'CSV') PATTERN='.*\.csv' ON_ERROR='CONTINUE';"
