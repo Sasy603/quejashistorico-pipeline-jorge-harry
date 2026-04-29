@@ -56,5 +56,5 @@ jobs:
       
           for file in $FILES; do
             echo "Subiendo archivo: $file"
-            snow stage upload "$file" @my_internal_stage --auto-compress
+            snow storage upload "$file" @my_internal_stage --auto-compress
           done
