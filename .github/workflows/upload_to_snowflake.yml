@@ -32,11 +32,24 @@ jobs:
           EOF
           chmod 600 ~/.snowflake/config.toml
 
-      
-      - name: Upload new files to internal stage
+      - name: Subir archivos modificados al stage de Snowflake
         run: |
-          for file in $(jq -r '.commits[].modified[], .commits[].added[]' <<< '${{ toJson(github.event) }}' | grep "^data/"); do
+          FILES=$(jq -r '
+            (.head_commit.added // []) +
+            (.head_commit.modified // []) |
+            .[] |
+            select(startswith("data/"))
+          ' <<< '${{ toJson(github.event) }}')
+      
+          echo "Archivos detectados:"
+          echo "$FILES"
+      
+          if [ -z "$FILES" ]; then
+            echo "No hay archivos nuevos o modificados en data/"
+            exit 0
+          fi
+      
+          for file in $FILES; do
             echo "Subiendo archivo: $file"
             snow file put "$file" @my_internal_stage --auto-compress
           done
-
