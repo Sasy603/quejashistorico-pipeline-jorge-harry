@@ -32,10 +32,11 @@ jobs:
           EOF
           chmod 600 ~/.snowflake/config.toml
 
-
+      
       - name: Upload new files to internal stage
         run: |
-          for file in $(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep "^data/"); do
+          for file in $(jq -r '.commits[].modified[], .commits[].added[]' <<< '${{ toJson(github.event) }}' | grep "^data/"); do
             echo "Subiendo archivo: $file"
             snow file put "$file" @my_internal_stage --auto-compress
           done
+
