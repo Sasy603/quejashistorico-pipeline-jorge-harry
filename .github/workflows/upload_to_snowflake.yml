@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4   # actualizado para evitar deprecación de Node.js 20
 
       - name: Install SnowSQL
         run: |
@@ -39,12 +39,12 @@ jobs:
             snowsql -c default -q "PUT file://$file @my_internal_stage AUTO_COMPRESS=TRUE"
           done
 
-      - name: Load files into RAW table
+      - name: Load files into RAW table (incremental por archivo)
         run: |
           snowsql -c default -q "
             COPY INTO RAW.landing_table
             FROM @my_internal_stage
             FILE_FORMAT = (TYPE = 'CSV')
             PATTERN='.*\.csv'
-            ON_ERROR='CONTINUE'; 
-            "
+            ON_ERROR='CONTINUE';
+          "
