@@ -35,7 +35,7 @@ jobs:
           EOF
           chmod 600 ~/.snowflake/config.toml
 
-      - name: Obtener archivos modificados en data/
+      - name: Subir archivos modificados al stage de Snowflake
         run: |
           BEFORE=${{ github.event.before }}
           AFTER=${{ github.event.after }}
@@ -56,5 +56,5 @@ jobs:
       
           for file in $FILES; do
             echo "Subiendo archivo: $file"
-            snow stage put "$file" @my_internal_stage --auto-compress
+            snow stage upload "$file" @my_internal_stage --auto-compress
           done
