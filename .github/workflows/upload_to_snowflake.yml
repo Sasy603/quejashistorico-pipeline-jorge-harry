@@ -3,7 +3,7 @@ name: Upload new files to Snowflake
 on:
   push:
     paths:
-      - "data/**"   # Solo se ejecuta si cambian archivos dentro de /data
+      - "data/**"
 
 jobs:
   upload-to-snowflake:
@@ -11,12 +11,13 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4   # actualizado para evitar deprecación de Node.js 20
+        uses: actions/checkout@v4
 
-      - name: Install SnowSQL
+      - name: Install SnowSQL (official installer)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y snowsql
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.29-linux_x86_64.bash
+          bash snowsql-1.2.29-linux_x86_64.bash -y
+          echo "$HOME/.snowsql" >> $GITHUB_PATH
 
       - name: Configure SnowSQL connection
         run: |
