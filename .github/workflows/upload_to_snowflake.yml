@@ -35,10 +35,13 @@ jobs:
       - name: Subir archivos modificados al stage de Snowflake
         run: |
           FILES=$(jq -r '
-            (.head_commit.added // []) +
-            (.head_commit.modified // []) |
-            .[] |
-            select(startswith("data/"))
+            [
+              (.commits[].added // []),
+              (.commits[].modified // [])
+            ]
+            | add
+            | .[]
+            | select(startswith("data/"))
           ' <<< '${{ toJson(github.event) }}')
       
           echo "Archivos detectados:"
