@@ -15,8 +15,7 @@ jobs:
 
       - name: Install Snowflake CLI
         run: |
-          pip install --user snowflake-cli
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          pip install snowflake-cli
 
       - name: Configure Snowflake CLI connection
         run: |
@@ -41,4 +40,10 @@ jobs:
 
       - name: Load files into RAW table
         run: |
-          snowflake sql -q "COPY INTO RAW.landing_table FROM @my_internal_stage FILE_FORMAT = (TYPE = 'CSV') PATTERN='.*\.csv' ON_ERROR='CONTINUE'; "
+          snowflake sql -q "
+            COPY INTO RAW.landing_table
+            FROM @my_internal_stage
+            FILE_FORMAT = (TYPE = 'CSV')
+            PATTERN='.*\.csv'
+            ON_ERROR='CONTINUE';
+          "
