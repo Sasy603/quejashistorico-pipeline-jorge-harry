@@ -34,8 +34,8 @@ jobs:
           schema = "${{ secrets.SNOWFLAKE_SCHEMA }}"
           EOF
           chmod 600 ~/.snowflake/config.toml
-
-      - name: Subir archivos modificados al stage de Snowflake
+      
+      - name: Subir archivos y debug Snowflake
         run: |
           BEFORE=${{ github.event.before }}
           AFTER=${{ github.event.after }}
@@ -54,7 +54,40 @@ jobs:
             exit 0
           fi
       
+          echo "🔎 Contexto actual en Snowflake:"
+          snow sql -q "
+            SELECT 
+              CURRENT_ACCOUNT(),
+              CURRENT_USER(),
+              CURRENT_ROLE(),
+              CURRENT_DATABASE(),
+              CURRENT_SCHEMA(),
+              CURRENT_WAREHOUSE();
+          "
+      
+          echo "🔎 Buscando el stage:"
+          snow sql -q "
+            SHOW STAGES LIKE 'MY_INTERNAL_STAGE';
+          "
+      
+          echo "🔎 Listando contenido del stage (nombre simple):"
+          snow sql -q "
+            LIST @my_internal_stage;
+          "
+      
+          echo "🔎 Listando contenido del stage (ruta completa):"
+          snow sql -q "
+            LIST @${{ secrets.SNOWFLAKE_DATABASE }}.${{ secrets.SNOWFLAKE_SCHEMA }}.MY_INTERNAL_STAGE;
+          "
+      
           for file in $FILES; do
             echo "Subiendo archivo: $file"
-            snow sql -q "PUT file://$file @my_internal_stage AUTO_COMPRESS=TRUE"
+            snow sql -q "
+              PUT file://$file @${{ secrets.SNOWFLAKE_DATABASE }}.${{ secrets.SNOWFLAKE_SCHEMA }}.MY_INTERNAL_STAGE AUTO_COMPRESS=TRUE
+            "
           done
+      
+          echo "📦 Contenido final del stage:"
+          snow sql -q "
+            LIST @${{ secrets.SNOWFLAKE_DATABASE }}.${{ secrets.SNOWFLAKE_SCHEMA }}.MY_INTERNAL_STAGE;
+          "
