@@ -56,5 +56,5 @@ jobs:
       
           for file in $FILES; do
             echo "Subiendo archivo: $file"
-            snow storage upload "$file" @my_internal_stage --auto-compress
+            snow sql -q "PUT file://$file @my_internal_stage AUTO_COMPRESS=TRUE"
           done
